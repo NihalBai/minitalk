@@ -6,7 +6,7 @@
 /*   By: root <root@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/16 10:20:00 by root              #+#    #+#             */
-/*   Updated: 2025/01/16 11:52:53 by root             ###   ########.fr       */
+/*   Updated: 2025/01/16 17:36:51 by root             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,8 @@ void shift_send(char *s, int pid) {
     size_t i;
     
     i = 0;
-    while (i < strlen(s)) {
+    while (i < strlen(s)) 
+    {
         int j = 7;
         while (j >= 0) 
         {
