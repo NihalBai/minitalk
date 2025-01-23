@@ -6,7 +6,7 @@
 /*   By: nbaidaou <nbaidaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/16 11:14:22 by root              #+#    #+#             */
-/*   Updated: 2025/01/19 01:55:16 by nbaidaou         ###   ########.fr       */
+/*   Updated: 2025/01/23 19:51:52 by nbaidaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,10 +17,17 @@
 
 void	handle_sig(int sig, siginfo_t *info, void *context)
 {
-	static char	temp = 0;
-	static int	count_bits = 0;
+	static pid_t	last_pid = 0;
+	static char		temp = 0;
+	static int		count_bits = 0;
 
 	(void)context;
+	if (last_pid != info->si_pid)
+	{
+		last_pid = info->si_pid;
+		temp = 0;
+		count_bits = 0;
+	}
 	temp <<= 1;
 	if (sig == SIGUSR2)
 		temp |= 1;
@@ -28,13 +35,9 @@ void	handle_sig(int sig, siginfo_t *info, void *context)
 	if (count_bits == 8)
 	{
 		if (temp == '\0')
-		{
 			write(1, "\n", 1);
-		}
 		else
-		{
 			write(1, &temp, 1);
-		}
 		temp = 0;
 		count_bits = 0;
 	}
