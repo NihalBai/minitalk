@@ -6,7 +6,7 @@
 /*   By: nbaidaou <nbaidaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/16 11:14:22 by root              #+#    #+#             */
-/*   Updated: 2025/01/23 19:51:52 by nbaidaou         ###   ########.fr       */
+/*   Updated: 2025/01/25 16:07:22 by nbaidaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,19 +15,22 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+void	initialize(char *temp, int *count_bits)
+{
+	*temp = 0;
+	*count_bits = 0;
+	write(1, "\n", 1);
+}
+
 void	handle_sig(int sig, siginfo_t *info, void *context)
 {
-	static pid_t	last_pid = 0;
-	static char		temp = 0;
-	static int		count_bits = 0;
+	static pid_t	last_pid;
+	static char		temp;
+	static int		count_bits;
 
 	(void)context;
 	if (last_pid != info->si_pid)
-	{
-		last_pid = info->si_pid;
-		temp = 0;
-		count_bits = 0;
-	}
+		initialize(&temp, &count_bits);
 	temp <<= 1;
 	if (sig == SIGUSR2)
 		temp |= 1;
@@ -42,25 +45,53 @@ void	handle_sig(int sig, siginfo_t *info, void *context)
 		count_bits = 0;
 	}
 	kill(info->si_pid, SIGUSR1);
+	last_pid = info->si_pid;
+}
+
+void	ft_putnbr_fd(int n, int fd)
+{
+	char	c;
+
+	if (fd < 0)
+		return ;
+	if (n == -2147483648)
+		write(fd, "-2147483648", 11);
+	else if (n >= 0 && n <= 9)
+	{
+		c = n + '0';
+		write(fd, &c, 1);
+	}
+	else if (n > 9)
+	{
+		ft_putnbr_fd(n / 10, fd);
+		ft_putnbr_fd(n % 10, fd);
+	}
+	else if (n < 0)
+	{
+		write(fd, "-", 1);
+		n *= -1;
+		ft_putnbr_fd(n, fd);
+	}
 }
 
 int	main(void)
 {
 	struct sigaction	sa;
+	int					pid;
 
 	sa.sa_sigaction = &handle_sig;
 	sa.sa_flags = SA_SIGINFO;
 	sigemptyset(&sa.sa_mask);
-	if (sigaction(SIGUSR1, &sa, NULL) == -1 || sigaction(SIGUSR2, &sa, NULL) ==
-		-1)
+	if (sigaction(SIGUSR1, &sa, NULL) == -1
+		|| sigaction(SIGUSR2, &sa, NULL) == -1)
 	{
 		perror("sigaction");
 		exit(EXIT_FAILURE);
 	}
-	printf("Server PID: %d\n", getpid());
+	pid = getpid();
+	write(1, "Server PID: ", 12);
+	ft_putnbr_fd(pid, 1);
 	while (1)
-	{
 		pause();
-	}
 	return (0);
 }
